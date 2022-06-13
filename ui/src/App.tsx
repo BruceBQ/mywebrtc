@@ -13,6 +13,10 @@ function App() {
       <Button variant="contained" onClick={handleClick}>
         Connect
       </Button>
+
+      <div style={{margin: 16}}>
+        <video style={{background: "#eee"}} width={640}></video>
+      </div>
     </div>
   );
 }

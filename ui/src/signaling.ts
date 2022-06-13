@@ -26,7 +26,15 @@ class Signaling {
                     (<WebSocket>error.target).readyState
             );
         };
-        this.ws.onmessage = (message) => {};
+        this.ws.onmessage = (message) => {
+            const data = message.data ? JSON.parse(message.data) : null
+            switch(data.type) {
+                case "":
+                    break
+                case "SdpOffer":
+                    break
+            }
+        };
     }
 
     close() {

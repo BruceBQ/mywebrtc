@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/aler9/gortsplib"
+	"github.com/aler9/gortsplib/pkg/base"
 	"github.com/gorilla/websocket"
+	"github.com/pion/webrtc/v3"
 )
 
 var upgrader = websocket.Upgrader{
@@ -14,32 +16,65 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type Camera struct {
+	RtspLink string
+}
+
 func main() {
-	r := gin.Default()
+	camera := Camera{
+		RtspLink: "rtsp://vietbq@centic.vn:centic.vn@doxe.danang.gov.vn:30554/cameras/60c1e33937eb18a230bd0e7f/channels/1",
+	}
 
-	r.GET("/ws", func(c *gin.Context) {
-		ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			fmt.Println("upgrader err:", err)
-		}
-		defer ws.Close()
-		for {
-			mt, message, err := ws.ReadMessage()
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
-			fmt.Println(string(message))
-			if string(message) == "ping" {
-				message = []byte("pong")
-			}
-			err = ws.WriteMessage(mt, message)
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
-		}
-	})
+	config := webrtc.Configuration{
+		ICEServers: []webrtc.ICEServer{
+			{URLs: []string{"stun:stun.l.google.com:19302"}},
+		},
+	}
 
-	r.Run(":3001")
+	api := webrtc.NewAPI()
+	peerConnection, err := api.NewPeerConnection(config)
+	if err != nil {
+		fmt.Println("NewPeerConnection Err:", err)
+		return
+	}
+
+	fmt.Printf("NewPeerConnection: %v\n", peerConnection)
+
+	client := gortsplib.Client{}
+
+	u, err := base.ParseURL(camera.RtspLink)
+	if err != nil {
+		panic(err)
+	}
+
+	err = client.Start(u.Scheme, u.Host)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	// find published tracks
+	tracks, baseURL, _, err := client.Describe(u)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, track := range tracks {
+		attributes := track.MediaDescription().Attributes
+		for _, attribute := range attributes {
+			fmt.Println("Attribute:", attribute.Value)
+		}
+		// fmt.Println("Track:", track.MediaDescription().Attributes)
+	}
+
+	client.OnPacketRTP = func(ctx *gortsplib.ClientOnPacketRTPCtx) {
+		fmt.Println("trackId:", ctx.Packet)
+	}
+	// fmt.Println("baseURL", baseURL)
+	err = client.SetupAndPlay(tracks, baseURL)
+	if err != nil {
+		panic(err)
+	}
+	panic(client.Wait())
+
 }
