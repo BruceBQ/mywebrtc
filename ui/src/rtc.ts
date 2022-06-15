@@ -2,7 +2,7 @@ import signaling from "./signaling";
 
 class RTC {
     localConnection: RTCPeerConnection;
-    stream?: MediaStream
+    stream?: MediaStream;
     localTracks: MediaStreamTrack[] = [];
     constructor() {
         this.localConnection = this.createLocalPeerConnection();
@@ -34,10 +34,6 @@ class RTC {
         };
         pc.onnegotiationneeded = (e) => {
             console.log("onnegotiationneeded", e);
-            pc.createOffer().then((offer) => {
-                console.log(offer.sdp);
-                pc.setLocalDescription(offer);
-            });
         };
         pc.onsignalingstatechange = (e) => {
             console.log("onsignalingstatechange", e);
@@ -62,20 +58,12 @@ class RTC {
             this.localConnection.addTrack(tracks[i]);
         }
         signaling.connect();
+        this.localConnection.addTransceiver("video", { direction: "sendrecv" });
         // this.localConnection.createOffer().then((offser) => {
-        //     console.log(offser);
+        //     // console.log(offser);
+        //     // signaling.ws?.send(JSON.stringify(offser))
         //     this.localConnection.setLocalDescription(offser)
         // });
-
-        this.localConnection.addTransceiver("video", { direction: "sendrecv" });
-        // this.localConnection
-        //     .createAnswer()
-        //     .then((answer) => {
-        //         console.log("answer", answer);
-        //     })
-        //     .catch((err) => {
-        //         console.log({ err });
-        //     });
     };
 
     stop = (closeConnection: Boolean) => {};
@@ -83,15 +71,17 @@ class RTC {
     createOffer = async () => {
         const offer = await this.localConnection.createOffer();
         this.localConnection.setLocalDescription(offer);
-        return offer.sdp;
+        return offer;
     };
 
     sendSdpToSignaling = (sdp: RTCSessionDescriptionInit["sdp"]) => {
-        if (signaling.ws) {
-            signaling.ws.send(
-                JSON.stringify({ type: "SdpOfferAnswer", data: sdp })
-            );
-        }
+        setTimeout(() => {
+            if (signaling.ws && signaling.ws.readyState === WebSocket.OPEN) {
+                signaling.ws.send(
+                    JSON.stringify({ type: "SdpOfferAnswer", data: sdp })
+                );
+            }
+        }, 100);
     };
 
     acceptOffer = async (offerSdp: string) => {
@@ -99,8 +89,8 @@ class RTC {
             type: "offer",
             sdp: offerSdp,
         });
-        const answer = await this.localConnection.createAnswer()
-        this.localConnection.setLocalDescription(answer)
+        const answer = await this.localConnection.createAnswer();
+        this.localConnection.setLocalDescription(answer);
     };
 }
 

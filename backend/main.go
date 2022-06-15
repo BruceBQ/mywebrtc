@@ -60,15 +60,18 @@ func main() {
 	}
 
 	for _, track := range tracks {
+		fmt.Println(track.MediaDescription())
 		attributes := track.MediaDescription().Attributes
 		for _, attribute := range attributes {
 			fmt.Println("Attribute:", attribute.Value)
 		}
 		// fmt.Println("Track:", track.MediaDescription().Attributes)
 	}
+	offer, err := peerConnection.CreateOffer(nil)
+	fmt.Println(offer)
 
 	client.OnPacketRTP = func(ctx *gortsplib.ClientOnPacketRTPCtx) {
-		fmt.Println("trackId:", ctx.Packet)
+		// fmt.Println("trackId:", ctx.Packet)
 	}
 	// fmt.Println("baseURL", baseURL)
 	err = client.SetupAndPlay(tracks, baseURL)

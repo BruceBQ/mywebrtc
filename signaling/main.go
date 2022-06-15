@@ -36,10 +36,9 @@ func main() {
 				break
 			}
 
-			fmt.Println(string(message))
 			var req CallRequest
 			json.Unmarshal(message, &req)
-			fmt.Println("Sdp", req.Sdp)
+			fmt.Println("Sdp", req.Type)
 			if string(message) == "ping" {
 				message = []byte("pong")
 			}

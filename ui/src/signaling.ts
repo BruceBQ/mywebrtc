@@ -8,16 +8,12 @@ class Signaling {
         this.ws = new WebSocket("ws://localhost:3001/ws");
         this.ws.onopen = () => {
             console.log("client side socket connection established");
-            if (this.ws) {
-                // this.ws?.send("ping")
-                const data = { cameraId: "" };
-                this.ws.send(JSON.stringify(data));
-            }
         };
 
         this.ws.onclose = () => {
             console.log("client side socket connection disconnected");
         };
+
         this.ws.onerror = (error) => {
             console.log("Websocket error:", error);
             rtc.stop(true);

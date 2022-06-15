@@ -4,8 +4,10 @@ import Button from "@mui/material/Button";
 import rtc from "./rtc";
 
 function App() {
-  const handleClick = () => {
+  const handleClick = async () => {
     rtc.start();
+    const offer = await rtc.createOffer()
+    rtc.sendSdpToSignaling(offer.sdp)
   };
 
   return (
