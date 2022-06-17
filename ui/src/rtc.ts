@@ -4,8 +4,12 @@ class RTC {
     localConnection: RTCPeerConnection;
     stream?: MediaStream;
     localTracks: MediaStreamTrack[] = [];
+    video?: HTMLVideoElement
     constructor() {
         this.localConnection = this.createLocalPeerConnection();
+    }
+    initTrack = (video:HTMLVideoElement) => {
+        this.video = video
     }
 
     createLocalPeerConnection = () => {
@@ -39,7 +43,12 @@ class RTC {
             console.log("onsignalingstatechange", e);
         };
         pc.ontrack = (e) => {
-            console.log("ontrack", e);
+            if (this.video) {
+                console.log(e.streams[0])
+                this.video.setAttribute("class","vioetbq")
+                this.video.srcObject = e.streams[0]
+                this.video.play()
+            }
         };
 
         return pc;
@@ -51,13 +60,15 @@ class RTC {
     };
 
     start = () => {
-        const stream = this.createLocalTracks();
-        const tracks = stream.getVideoTracks();
-        for (let i = 0; i < tracks.length; i++) {
-            console.log("Track", tracks[i]);
-            this.localConnection.addTrack(tracks[i]);
-        }
-        signaling.connect();
+        // const stream = this.createLocalTracks();
+        // const tracks = stream.getVideoTracks();
+        // for (let i = 0; i < tracks.length; i++) {
+        //     console.log("Track", tracks[i]);
+        
+        //     this.localConnection.addTrack(tracks[i]);
+        // }
+        // const stream = this.video?.captureStream()
+        // signaling.connect();
         this.localConnection.addTransceiver("video", { direction: "sendrecv" });
         // this.localConnection.createOffer().then((offser) => {
         //     // console.log(offser);
@@ -74,6 +85,10 @@ class RTC {
         return offer;
     };
 
+    acceptOffer =  (answer: RTCSessionDescription) => {
+        this.localConnection.setRemoteDescription(answer)
+    }
+
     sendSdpToSignaling = (sdp: RTCSessionDescriptionInit["sdp"]) => {
         setTimeout(() => {
             if (signaling.ws && signaling.ws.readyState === WebSocket.OPEN) {
@@ -84,14 +99,14 @@ class RTC {
         }, 100);
     };
 
-    acceptOffer = async (offerSdp: string) => {
-        await this.localConnection.setRemoteDescription({
-            type: "offer",
-            sdp: offerSdp,
-        });
-        const answer = await this.localConnection.createAnswer();
-        this.localConnection.setLocalDescription(answer);
-    };
+    // acceptOffer = async (offerSdp: string) => {
+    //     await this.localConnection.setRemoteDescription({
+    //         type: "offer",
+    //         sdp: offerSdp,
+    //     });
+    //     const answer = await this.localConnection.createAnswer();
+    //     this.localConnection.setLocalDescription(answer);
+    // };
 }
 
 const rtc = new RTC();
