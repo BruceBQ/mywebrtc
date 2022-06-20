@@ -3,7 +3,8 @@ module backend
 go 1.18
 
 require (
-	github.com/aler9/gortsplib v0.0.0-20220603163446-7986cb0c5a07 // indirect
+	github.com/aler9/gortsplib v0.0.0-20220615092428-c6b5540702ff // indirect
+	github.com/deepch/vdk v0.0.17 // indirect
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.0 // indirect

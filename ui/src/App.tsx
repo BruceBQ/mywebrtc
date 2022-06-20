@@ -9,7 +9,7 @@ function App() {
     rtc.initTrack(videoEl.current!)
     rtc.start();
     const offer = await rtc.createOffer()
-    const response = await fetch("http://localhost:3001/stream/webrtc", {method: "POST", body: JSON.stringify(offer)})
+    const response = await fetch("http://10.49.46.38:3001/stream/webrtc", {method: "POST", body: JSON.stringify(offer)})
     const answer = await response.json()
     console.log(answer)
     rtc.acceptOffer(answer)

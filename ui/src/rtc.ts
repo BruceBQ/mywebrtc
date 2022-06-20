@@ -19,7 +19,7 @@ class RTC {
 
         pc.onconnectionstatechange = (e) => {
             console.log("onconnectionstatechange", e);
-            console.log(pc.connectionState);
+            // console.log(pc.connectionState);
         };
         pc.ondatachannel = (e) => {
             console.log("ondatachannel", e);
@@ -44,7 +44,26 @@ class RTC {
         };
         pc.ontrack = (e) => {
             if (this.video) {
-                console.log(e.streams[0])
+                this.video.addEventListener('error', (event) => {
+                    console.log('error',event)
+                })
+
+                this.video.addEventListener('abort', event => {
+                    console.log('abort',event)
+                })
+
+                this.video.addEventListener('loadstart', event=> {
+                    console.log('loadstart',event)
+                })
+                this.video.addEventListener('loadstart', event=> {
+                    console.log('loadstart',event)
+                })
+
+                this.video.addEventListener('waiting', event => { 
+                    console.log('waiting',event)
+                })
+                const mediastream = e.streams[0]
+                console.log(mediastream.getVideoTracks())
                 this.video.setAttribute("class","vioetbq")
                 this.video.srcObject = e.streams[0]
                 this.video.play()
